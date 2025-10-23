@@ -1,0 +1,90 @@
+<!doctype html> <!-- Indica que es un documento HTML -->
+<html>
+  <head>
+    <meta charset="utf-8" /> 
+    <title>Tu nombre</title> 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+  </head>
+
+  <body>
+
+
+    <script>
+    
+   function setup() {
+  createCanvas(800, 700);   // Cambia estos números y verás que el texto NO se recoloca solo
+  background(240, 250, 30);
+  noStroke();
+
+  // Título centrado "a mano" (hemos elegido 320 porque 640/2 = 320)
+  textSize(60);
+  textAlign(CENTER, TOP);
+  fill(20, 250, 20);
+  text("Mi equipo favorito", 320, 16);
+
+  // Subtítulo un poco más abajo
+  textSize(30);
+  fill(70, 20, 255);
+  text("Real Oviedo", 320, 100);
+
+  
+  textSize(20);
+  fill(0);
+  textAlign(LEFT, TOP);
+  text("(Nacho vidal)", 550, 400);    
+
+textAlign(RIGHT, TOP);
+  text("(Hassan)", 634, 170);   
+
+  textAlign(LEFT, BOTTOM);
+  text("(Escandel)", 280, 500);   
+
+  textAlign(RIGHT, BOTTOM);
+  text("(Colombato)", 320, 320);
+
+  textAlign(RIGHT, BOTTOM);
+  text("(Kwasi Sibo)", 460, 320);
+
+ 
+  textAlign(CENTER, CENTER);
+  textSize(30);
+  fill(30, 90);
+  text("Cazorla", 320, 250);
+
+
+  textAlign(CENTER, CENTER);
+  textSize(30);
+  fill (10);
+  text("(Alemao)", 320, 170);
+
+
+
+  textAlign(CENTER, CENTER);
+  textSize(20);
+  fill (10);
+  text("(Ilyas Chaira)", 60, 190);
+
+
+
+  textAlign(CENTER, CENTER);
+  textSize(20);
+  fill (10);
+  text("(David Costas)", 410, 420);
+
+
+  textAlign(CENTER, CENTER);
+  textSize(20);
+  fill (10);
+  text("(Calvo)", 230, 420);
+
+  textAlign(CENTER, CENTER);
+  textSize(20);
+  fill (10);
+  text("(Rahim)", 70, 400);
+
+
+}
+
+    </script>
+  </body>
+</html>
