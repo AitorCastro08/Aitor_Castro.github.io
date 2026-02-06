@@ -1,0 +1,200 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>A1 — Variables (estado + movimiento simple)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- p5.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+  </head>
+  <body>
+  <script>
+  
+  //Variables
+  let xS, yS, dS, rS, vS; //Sol
+  let xL, yL, dL, rL, vL; //Luna
+  let dia, mes, anio; // Calendario
+  
+  // Variables stikman
+  let xP, yP; // Posición del personaje
+  let S; // Tamaño base stikman
+  let vP; // Velocidad Horizontal (izq/der)
+  let groundy // Altura Suelo
+  let vY; // velocidad vertical salto
+  let jumpV; // Impulso de salto
+  let g; // Gravedad
+  let rHead; // Cabeza
+  let bodyL; // Cuerpo
+  let armL; //Brazos
+  let legL; // Piernas
+  let hipY; // Cadera encima de los piés
+  let shoulderY; // hombros
+  let headY; // Cabeza
+  
+  function setup() {
+  createCanvas(400, 400);
+  
+  // Calendario
+  dia = 1
+  mes = 1
+  anio = 2025
+   //Sol
+  dS = min(width, height) * 0.20; 
+  rS = dS/2; // Tamaño del Sol 
+  xS = -rS; // Entra por izquierda
+  yS = height/4; // Altura
+  vS = width/420; // Velocidad Sol
+  //Luna 
+  dL = dS*0.5; // Tamaño de la Luna
+  rL = dL/2; 
+  xL = -width-rL; //Entra por izquierda mas lejos que el Sol
+  yL = height/3; // Altura
+  vL = width/450; //Velocidad Luna
+  
+    // Suelo (debe coincidir con el suelo que ya dibujas en T12)
+groundY = 0.80 * height;
+  
+  // Stickman: tamaño y posición inicial
+S  = 0.12 * min(width, height);
+xP = 0.25 * width;
+yP = groundY; // IMPORTANTE: aquí yP será la posición de los pies
+ 
+ //Stickman
+  rHead = 0.2*S;
+  bodyL = 0.6*S;
+  armL = 0.45*S;
+  legL = 0.55*S;
+ 
+
+// Movimiento horizontal
+vP = width / 150;
+
+// Salto (valores sencillos)
+vY = 0;
+jumpV = -0.030 * height;// impulso hacia arriba
+g = 0.010 * height;// aceleración hacia abajo (pequeña)
+  }
+  
+  function draw() { 
+  
+  
+  
+  noStroke() // No trazo
+  if (xS <= width + rS) {
+  fill(0); // Dia 
+  }
+  else { fill(255); // Noche
+  }
+ 
+ 
+ 
+ // Salto en función de Variables
+   hipY = yP - legL;
+  shoulderY = hipY - bodyL;
+  headY = shoulderY - rHead;
+  
+
+  
+  // Reset día + incremento de mes
+  if (dia > 30) { dia = 1; mes = mes + 1; } 
+ 
+ // Reset de mes + incremento de año 
+  if (mes > 12) { mes = 1; anio = anio + 1; } 
+  
+  
+  
+  if (xS<=width+rS) {
+  background(0,0,255); // Azul
+  }
+  else { background(10); //Negro
+  }
+  
+  if (keyIsDown(LEFT_ARROW)) {
+  xP = xP - vP;
+} 
+else if (keyIsDown(RIGHT_ARROW)) {
+  xP = xP + vP;
+  }
+  
+  if (xP < 0) {
+  xP = 0;
+}
+if (xP > width) {
+  xP = width;
+}
+  noStroke(); 
+  fill(245, 324, 10);
+  circle(xS, yS, dS);
+  noStroke();
+  fill(200);
+  circle(xL, yL, dL);
+    textSize(20); //Tamaño letra
+  text("fecha: (" + dia + ") (" + mes+ ") (" + anio + ")", 10, 20);
+  
+  stroke(0);
+strokeWeight(2);
+noFill();
+
+// Cabeza
+fill(255);
+circle(xP, headY, 2 * rHead);
+
+// Tronco
+stroke(255)
+fill(240, 30)
+line(xP, shoulderY, xP, hipY);
+
+
+// Brazos (una línea horizontal + dos líneas hacia abajo)
+stroke(255)
+line(xP - 0.25*S, shoulderY, xP + 0.25*S, shoulderY);
+line(xP - 0.25*S, shoulderY, xP - 0.25*S, shoulderY + armL);
+line(xP + 0.25*S, shoulderY, xP + 0.25*S, shoulderY + armL);
+
+// Piernas
+line(xP, hipY, xP - 0.18*S, yP);
+line(xP, hipY, xP + 0.18*S, yP);
+
+
+  xS = xS + vS;
+  xL = xL + vL;
+  if (xL > 2*width + rL) { 
+  xL = -rL }
+  
+  if (xS > 2*width + rS) { 
+  xS = -rS*1.3; 
+   dia = dia + 1; 
+
+   }
+   
+      
+   // Suelo
+  fill(0, 200, 80);
+  rect(0, 0.8*height, width, 0.8*height);
+  
+  
+  // logica salto
+  yP=yP+vY;
+  
+  if(yP<0.55*height){
+  vY=g;
+  }
+  if(yP>0.8*height)
+  {
+  yP=0.8*height;
+  vY=0;
+  }
+}
+
+function keyPressed() {
+  if (keyCode === UP_ARROW) {
+    // Solo saltamos si estamos en el suelo
+    if (yP === groundY) {
+      vY = jumpV;
+    }
+  }
+} 
+
+ </script>
+  </body>
+</html>

@@ -1,0 +1,252 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>A1 — Variables (estado + movimiento simple)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+  </head>
+  <body>
+  <script>
+  
+  //Variables
+  let xS, yS, dS, rS, vS; //Sol
+  let xL, yL, dL, rL, vL; //Luna
+  let dia, mes, anio; // Calendario
+  
+  // Variables stickman
+  let xP, yP; // Posición del personaje
+  let S; // Tamaño base stickman
+  let vP; // Velocidad Horizontal (izq/der)
+  let groundY; // Altura Suelo (Corregido nombre a groundY)
+  let vY; // velocidad vertical salto
+  let jumpV; // Impulso de salto
+  let g; // Gravedad
+  let rHead; // Cabeza
+  let bodyL; // Cuerpo
+  let armL; //Brazos
+  let legL; // Piernas
+  let hipY; // Cadera encima de los pies
+  let shoulderY; // hombros
+  let headY; // Cabeza
+  
+  // Variable disparo
+  let xD, yD, tD, vD, DisparoActivo;
+  // Variables del objetivo
+  let xO, yO, wO, hO, vO;
+  // Variable Contador
+  let Puntos;
+  
+  // Variable obstáculo
+  let xB, yB, wB, hB, vB;
+  let gameOver = false; 
+  
+  function setup() {
+    createCanvas(400, 400);
+  
+    // Obstáculo inicialización
+    wB = 20;
+    hB = 40;
+    xB = width; // Empieza en la derecha
+    vB = 3;     // Velocidad hacia la izquierda
+  
+    // Calendario
+    dia = 1; mes = 1; anio = 2025;
+
+    // Sol
+    dS = min(width, height) * 0.20; 
+    rS = dS/2; 
+    xS = -rS; 
+    yS = height/4; 
+    vS = width/420; 
+
+    // Luna 
+    dL = dS*0.5; 
+    rL = dL/2; 
+    xL = -width-rL; 
+    yL = height/3; 
+    vL = width/450; 
+  
+    Puntos = 0;
+    DisparoActivo = false;
+    tD = width * 0.04;
+    vD = height/ 50; // Aumentada un poco la velocidad de bala
+  
+    // Objetivo
+    xO = 0;
+    yO = 0.25 * height;
+    wO = 0.15 * width;
+    vO = 0.004 * width;
+  
+    groundY = 0.80 * height;
+    yB = groundY - hB; // Posicionar obstáculo sobre el suelo
+
+    // Stickman
+    S = 0.12 * min(width, height);
+    xP = 0.25 * width;
+    yP = groundY; 
+    rHead = 0.2*S;
+    bodyL = 0.6*S;
+    armL = 0.45*S;
+    legL = 0.55*S;
+
+    vP = width / 150;
+    vY = 0;
+    jumpV = -0.030 * height;
+    g = 0.001 * height; // Gravedad ajustada para que baje
+  }
+  
+  function draw() { 
+    
+    if (gameOver) {
+      pantallaGameOver();
+      return; // Detiene todo lo demás
+    }
+
+    // Movimientos izquierda y derecha 
+    if (keyIsDown(LEFT_ARROW)) { xP = xP - vP; } 
+    else if (keyIsDown(RIGHT_ARROW)) { xP = xP + vP; }
+  
+    if (xP < 0) { xP = 0; }
+    if (xP > width) { xP = width; }
+
+    // Fondo
+    if (xS <= width + rS) { background(0, 0, 255); }
+    else { background(20); }
+  
+    // Suelo
+    fill(0, 200, 80);
+    rect(0, 0.8*height, width, 0.2*height);
+
+    // Sol 
+    noStroke(); 
+    fill(245, 324, 10);
+    circle(xS, yS, dS);
+  
+    // Luna 
+    fill(200);
+    circle(xL, yL, dL);
+  
+    // Movimientos astros
+    xS = xS + vS;
+    xL = xL + vL;
+    if (xL > 2*width + rL) { xL = -rL; }
+
+    //Lógica obstáculo 
+    xB = xB - vB; // Movimiento lateral
+    if (xB < -wB) { xB = width + random(50, 200); } // Reinicio
+    
+    // Detección de Colisión Stickman vs Obstáculo
+    if (xP + 10 > xB && xP - 10 < xB + wB && yP > yB) {
+       gameOver = true;
+    }
+
+    // Movimiento Objetivo
+    xO = xO + vO;
+    if (xO - 30 > width) { xO = -0.1 * width; } 
+  
+    // Llamadas a funciones
+    dibujoStickman();
+    calendario(); 
+    DibujoDisparo(); 
+    Objetivo();
+    Contador(); 
+    Obstaculo(); // Dibujo
+
+    // Movimiento del disparo
+    if (DisparoActivo) {
+      yD = yD - vD;
+      // Colisión disparo vs Objetivo
+      let d = dist(xD, yD, xO, yO);
+      if (d < (wO / 2 + tD / 2)) {
+        Puntos++;
+        DisparoActivo = false;
+        yD = -100;
+        xO = -0.1 * width;
+        yO = random(0.15 * height, 0.45 * height);
+      }
+      if (yD < 0) { DisparoActivo = false; }
+    }
+  }
+
+  function calendario() { 
+    stroke(0); strokeWeight(1); fill(255);
+    textSize(20);
+    text("fecha: (" + dia + ") (" + mes+ ") (" + anio + ")", 10, 20);
+  
+    if (dia > 30) { dia = 1; mes = mes + 1; } 
+    if (mes > 12) { mes = 1; anio = anio + 1; }
+  
+    noStroke();
+    if (xS > 2*width + rS) { 
+      xS = -rS; 
+      dia = dia + 1; 
+    }
+  } 
+  
+  function dibujoStickman() {
+    // Lógica salto
+    yP = yP + vY;
+    if (yP < groundY) { vY += g; } 
+    else { yP = groundY; vY = 0; }
+
+    hipY = yP - legL;
+    shoulderY = hipY - bodyL;
+    headY = shoulderY - rHead;
+
+    fill(255); stroke(255);
+    circle(xP, headY, 2 * rHead); // Cabeza
+    line(xP, shoulderY, xP, hipY); // Tronco
+    line(xP - 0.25*S, shoulderY, xP + 0.25*S, shoulderY); // Brazos
+    line(xP - 0.25*S, shoulderY, xP - 0.25*S, shoulderY + armL);
+    line(xP + 0.25*S, shoulderY, xP + 0.25*S, shoulderY + armL);
+    line(xP, hipY, xP - 0.18*S, yP); // Piernas
+    line(xP, hipY, xP + 0.18*S, yP);
+  }
+  
+  function Obstaculo() { 
+    fill(255, 0, 0); // Rojo para que se vea
+    rect(xB, yB, wB, hB);
+  }
+
+  function pantallaGameOver() {
+    background(0);
+    fill(255);
+    textAlign(CENTER, CENTER);
+    textSize(40);
+    text("GAME OVER", width/2, height/2);
+    textSize(20);
+    text("Puntos: " + Puntos, width/2, height/2 + 50);
+  }
+
+  function DibujoDisparo() {
+    if (DisparoActivo) {
+      fill(100, 30, 90); stroke(0); strokeWeight(2);
+      circle(xD, yD, tD);
+    }
+  }
+
+  function Objetivo() {
+    fill(255, 23, 30); stroke(0); strokeWeight(1);
+    circle(xO, yO, wO); 
+  } 
+
+  function Contador() {
+    fill(255); noStroke(); textSize(20);
+    text("Puntos: " + Puntos, width - 130, 30);
+  }
+
+  function keyPressed() { 
+    if (keyCode === 32 && !DisparoActivo) { 
+      xD = xP;
+      yD = shoulderY;
+      DisparoActivo = true;
+    }
+    if (keyCode === UP_ARROW) {
+      if (yP === groundY) { vY = jumpV; }
+    }
+  } 
+
+  </script>
+  </body>
+</html>
