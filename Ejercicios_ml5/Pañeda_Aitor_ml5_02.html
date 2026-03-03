@@ -1,0 +1,164 @@
+    <!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ML5 03 · BodyPose (MoveNet) · Captura</title>
+
+  <!-- p5 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+
+  <!-- ml5 next-gen (BodyPose) -->
+  <script src="https://unpkg.com/ml5@latest/dist/ml5.min.js"></script>
+
+  <style>
+    body { font-family: system-ui, Arial, sans-serif; margin: 16px; }
+    .row { display:flex; gap:10px; flex-wrap: wrap; align-items:center; margin: 10px 0; }
+    input, button { padding: 10px 12px; font-size: 14px; }
+    .badge { border:1px solid #ccc; border-radius:999px; padding: 3px 10px; }
+  </style>
+</head>
+
+<body>
+  <h1>ML5 03 · BodyPose</h1>
+
+  <div class="row">
+    <button id="btnStart">Iniciar cámara</button>
+    <button id="btnShot" disabled>Capturar</button>
+
+    <span class="badge">Etiqueta:</span>
+    <input id="poseName" value="P1" />
+
+    <span id="status" class="badge">Estado: esperando…</span>
+  </div>
+
+  <script>
+    let video;
+    let bodyPose;
+    let poses = [];
+    let connections = [];
+
+    let iniciado = false;
+
+    const CONF_MIN = 0.1;
+
+    function setStatus(t) {
+      const el = document.getElementById("status");
+      el.textContent = "Estado: " + t;
+    }
+
+    function preload() {
+      // Carga el modelo (como en tu ejemplo)
+      bodyPose = ml5.bodyPose();
+    }
+
+    function setup() {
+      createCanvas(640, 480);
+
+      // Botones HTML
+      const btnStart = document.getElementById("btnStart");
+      const btnShot  = document.getElementById("btnShot");
+
+      btnStart.addEventListener("click", () => {
+        if (iniciado) return;
+        iniciado = true;
+
+        setStatus("iniciando cámara…");
+
+        // Crear vídeo tras gesto del usuario (más fiable en móvil)
+        video = createCapture(VIDEO, () => {
+          // callback cuando hay stream
+          setStatus("cámara lista");
+        });
+
+        video.size(640, 480);
+        video.hide();
+
+        setStatus("iniciando BodyPose…");
+
+        // Arrancar detección continua
+        bodyPose.detectStart(video, gotPoses);
+
+        // Obtener conexiones del esqueleto
+        connections = bodyPose.getConnections();
+
+        setStatus("detectando posturas…");
+        btnShot.disabled = false;
+      });
+
+      btnShot.addEventListener("click", () => {
+        // Nombre recomendado: etiqueta + timestamp
+        const poseName = document.getElementById("poseName").value || "P?";
+
+        const ahora = new Date();
+        const ts =
+          String(ahora.getFullYear()) +
+          String(ahora.getMonth() + 1).padStart(2, "0") +
+          String(ahora.getDate()).padStart(2, "0") + "_" +
+          String(ahora.getHours()).padStart(2, "0") +
+          String(ahora.getMinutes()).padStart(2, "0") +
+          String(ahora.getSeconds()).padStart(2, "0");
+
+        saveCanvas(`${poseName}_${ts}`, "png");
+      });
+
+      setStatus("esperando inicio (pulsa Iniciar cámara)");
+    }
+
+    function draw() {
+      background(0);
+
+      if (!iniciado || !video) {
+        // Pantalla de espera
+        fill(255);
+        noStroke();
+        textSize(16);
+        text("Pulsa 'Iniciar cámara' para comenzar", 16, 30);
+        return;
+      }
+
+      // Vídeo
+      image(video, 0, 0, width, height);
+
+      // Conexiones (líneas)
+      for (let i = 0; i < poses.length; i++) {
+        let pose = poses[i];
+
+        for (let j = 0; j < connections.length; j++) {
+          let pointAIndex = connections[j][0];
+          let pointBIndex = connections[j][1];
+
+          let pointA = pose.keypoints[pointAIndex];
+          let pointB = pose.keypoints[pointBIndex];
+
+          if (pointA && pointB && pointA.confidence > CONF_MIN && pointB.confidence > CONF_MIN) {
+            stroke(0, 255, 0);
+            strokeWeight(2);
+            line(pointA.x, pointA.y, pointB.x, pointB.y);
+          }
+        }
+      }
+
+      // Keypoints (puntos)
+      for (let i = 0; i < poses.length; i++) {
+        let pose = poses[i];
+
+        for (let j = 0; j < pose.keypoints.length; j++) {
+          let keypoint = pose.keypoints[j];
+
+          if (keypoint.confidence > CONF_MIN) {
+            fill(255, 0, 0);
+            noStroke();
+            circle(keypoint.x, keypoint.y, 10);
+          }
+        }
+      }
+    }
+
+    // Callback: resultados de BodyPose
+    function gotPoses(results) {
+      poses = results;
+    }
+  </script>
+</body>
+</html>
