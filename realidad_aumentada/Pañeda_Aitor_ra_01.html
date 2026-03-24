@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>RA 01 - Primera escena con marcador</title>
+
+  <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+  <script src="https://raw.githack.com/AR-js-org/AR.js/3.4.7/aframe/build/aframe-ar.js"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 16px;
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: white;
+    }
+
+    .pagina {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .caja-ra {
+      position: relative;
+      width: 100%;
+      max-width: 420px;
+      height: 420px;
+      margin: 0 auto;
+      border: 2px solid #444;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #000;
+    }
+
+    .caja-ra a-scene {
+      position: absolute !important;
+      top: 0;
+      left: 0;
+      width: 100% !important;
+      height: 100% !important;
+    }
+
+    .a-canvas {
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      z-index: 2 !important;
+    }
+
+    #arjs-video {
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover !important;
+      z-index: 1 !important;
+    }
+
+    .a-enter-vr,
+    .a-orientation-modal,
+    .a-fullscreen-ui {
+      display: none !important;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="pagina">
+    <div class="caja-ra" id="contenedor-ra">
+      <a-scene
+        embedded
+        vr-mode-ui="enabled: false"
+        renderer="alpha: true; antialias: true;"
+        arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false;">
+
+        <a-marker preset="hiro">
+          <a-box
+            position="0 0.5 0"
+            rotation="0 45 0"
+            scale="0.5 0.5 0.5"
+            color="red">
+          </a-box>
+        </a-marker>
+
+        <a-entity camera></a-entity>
+      </a-scene>
+    </div>
+  </div>
+
+  <script>
+    window.addEventListener("load", () => {
+      const contenedor = document.getElementById("contenedor-ra");
+
+      const recolocarElementosAR = () => {
+        const video = document.getElementById("arjs-video");
+        const canvas = document.querySelector(".a-canvas");
+
+        if (video && video.parentElement !== contenedor) {
+          contenedor.appendChild(video);
+        }
+
+        if (canvas && canvas.parentElement !== contenedor) {
+          contenedor.appendChild(canvas);
+        }
+      };
+
+      setTimeout(recolocarElementosAR, 1000);
+      setTimeout(recolocarElementosAR, 2000);
+      setTimeout(recolocarElementosAR, 3000);
+    });
+  </script>
+</body>
+</html>
